@@ -1,77 +1,31 @@
 "use client";
 
-import { Bot, CreditCard, LayoutDashboard, Presentation } from "lucide-react";
-import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
+  useSidebar,
 } from "~/components/ui/sidebar";
-import { cn } from "~/lib/utils";
-
-const items = [
-  {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Q&A",
-    url: "/qa",
-    icon: Bot,
-  },
-  {
-    title: "Meetings",
-    url: "/meetings",
-    icon: Presentation,
-  },
-  {
-    title: "Billing",
-    url: "/billing",
-    icon: CreditCard,
-  },
-];
+import { UpperSidebarGroup } from "../_components/UpperSidebarGroup";
+import LowerSidebarGroup from "../_components/LowerSidebarGroup";
 
 export function AppSidebar() {
   const pathname = usePathname();
-
+  const { open } = useSidebar();
   return (
     <Sidebar collapsible="icon" variant="floating">
-      <SidebarHeader>Logo</SidebarHeader>
+      <SidebarHeader>
+        <div className="flex items-center space-x-2">
+          <Image src="/logo.png" alt="logo" width={40} height={40} />
+          {open && <span className="text-lg font-bold">MyApp</span>}
+        </div>
+      </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link
-                      href={item.url}
-                      className={cn(
-                        {
-                          "bg-primary text-white": pathname === item.url,
-                        },
-                        "list-none",
-                      )}
-                    >
-                      <item.icon className="mr-2 h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <UpperSidebarGroup pathname={pathname} />
+        <LowerSidebarGroup isOpen={open} />
       </SidebarContent>
     </Sidebar>
   );
