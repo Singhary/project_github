@@ -8,8 +8,8 @@ import {
   SidebarHeader,
   useSidebar,
 } from "~/components/ui/sidebar";
-import { UpperSidebarGroup } from "../_components/UpperSidebarGroup";
-import LowerSidebarGroup from "../_components/LowerSidebarGroup";
+import { UpperSidebarGroup } from "./_components/UpperSidebarGroup";
+import LowerSidebarGroup from "./_components/LowerSidebarGroup";
 
 export function AppSidebar() {
   const pathname = usePathname();

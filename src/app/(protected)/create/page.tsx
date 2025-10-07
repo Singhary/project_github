@@ -1,24 +1,7 @@
-"use client";
-
 import React from "react";
-import { useForm } from "react-hook-form";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-
-type formInput = {
-  repoUrl: string;
-  projectName: string;
-  githubToken?: string;
-};
+import CreateForm from "../_components/CreateForm";
 
 const CreatePage = () => {
-  const { register, handleSubmit, reset } = useForm<formInput>();
-
-  function onSubmit(data: formInput) {
-    console.log(data);
-    return true;
-  }
-
   return (
     <div className="flex h-full items-center justify-center gap-12">
       <img src="/undraw_pair-programming_9jyg.svg" className="h-56 w-auto" />
@@ -33,29 +16,7 @@ const CreatePage = () => {
         </div>
         <div className="h-4"></div>
         <div>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Input
-              {...register("projectName", { required: true })}
-              placeholder="Project Name"
-              required
-            />
-            <div className="h-2"></div>
-            <Input
-              {...register("repoUrl", { required: true })}
-              placeholder="Repository URL"
-              type="url"
-              required
-            />
-            <div className="h-2"></div>
-            <Input
-              {...register("githubToken")}
-              placeholder="Github Token for private repo (optional)"
-            />
-            <div className="h-4"></div>
-            <Button type="submit">
-                Create Project
-            </Button>
-          </form>
+          <CreateForm />
         </div>
       </div>
     </div>
