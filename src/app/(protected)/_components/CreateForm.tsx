@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import useRefetch from "~/hooks/use-refetch";
 import { api } from "~/trpc/react";
 
 type formInput = {
@@ -16,6 +17,7 @@ const CreateForm = () => {
   const { register, handleSubmit, reset } = useForm<formInput>();
 
   const createProject = api.project.createProject.useMutation();
+  const refetch = useRefetch();
 
   function onSubmit(data: formInput) {
     createProject.mutate(
@@ -27,6 +29,7 @@ const CreateForm = () => {
       {
         onSuccess: () => {
           toast.success("Project created successfully");
+          refetch();
         },
         onError: () => {
           toast.error("Failed to create project");

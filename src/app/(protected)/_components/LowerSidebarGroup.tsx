@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Loader, Plus } from "lucide-react";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import {
@@ -9,42 +9,57 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar";
+import useProject from "~/hooks/use-project";
 import { cn } from "~/lib/utils";
-
-const project = [
-  {
-    name: "Project 1",
-  },
-  { name: "Project 2" },
-  { name: "Project 3" },
-];
 
 type LowerSidebarGroupProps = {
   isOpen: boolean;
 };
 
-export default function LowerSidebarGroup({isOpen}: LowerSidebarGroupProps) {
+export default function LowerSidebarGroup({ isOpen }: LowerSidebarGroupProps) {
+  const { projects, projectId, setProjectId } = useProject();
+
+  if (!projects || projects.length === 0) {
+    return (
+      <SidebarGroup>
+        <SidebarGroupLabel>Your Projects</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <div className="text-muted-foreground flex items-center gap-2 px-2 py-4 text-sm">
+            <Loader className="h-4 w-4 animate-spin" />
+            <span>Loading your projects...</span>
+          </div>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    );
+  }
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Your Projects</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {project.map((project) => {
+          {projects?.map((project) => {
             return (
-              <SidebarMenuItem key={project.name}>
+              <SidebarMenuItem key={project.projectName}>
                 <SidebarMenuButton asChild>
-                  <div>
+                  <div
+                    onClick={() => setProjectId(project.id)}
+                    className={cn("flex items-center gap-2", {
+                      "font-semibold": project.id === projectId,
+                    })}
+                  >
                     <div
                       className={cn(
                         "text-primary flex size-6 items-center justify-center rounded-sm border bg-white text-sm",
                         {
-                          "bg-primary border-primary text-white": true,
+                          "bg-primary border-primary text-white":
+                            project.id === projectId,
                         },
                       )}
                     >
-                      {project.name.charAt(0)}
+                      {project.projectName.charAt(0).toUpperCase()}
                     </div>
-                    <span className="mb-0.5">{project.name}</span>
+                    <span className="mb-0.5">{project.projectName}</span>
                   </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>

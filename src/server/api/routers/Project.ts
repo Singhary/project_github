@@ -17,12 +17,24 @@ export const projectRouter = createTRPCRouter({
           repoUrl: input.repoUrl,
           githubToken: input.githubToken,
           userToProjects: {
-            create: { 
-                userId: ctx.user.userId!,     
-            }
-          }
+            create: {
+              userId: ctx.user.userId!,
+            },
+          },
         },
       });
       return project;
     }),
+  getProjects: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.db.project.findMany({
+      where: {
+        userToProjects: {
+          some: {
+            userId: ctx.user.userId!,
+          },
+        },
+        deletedAt: null,
+      },
+    });
+  }),
 });
