@@ -37,6 +37,8 @@ model Project {
     deletedAt DateTime?
 
     userToProjects UserToProject[]
+
+    commits Commit[]
 }
 
 model UserToProject {
@@ -54,3 +56,19 @@ model UserToProject {
 }
 
 // Composite Uniqueness: @@unique is applied at the model level to ensure that a set of fields, when combined, has unique values. This contrasts with @unique, which is applied to a single field to ensure its values are unique.
+
+model Commit {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    projectId String
+    project   Project @relation(fields: [projectId], references: [id])
+
+    commitMessage      String
+    commitHash         String
+    commitAuthorName   String
+    commitAuthorAvatar String
+    commitDate         DateTime
+    summary            String
+}
