@@ -1,11 +1,24 @@
+/**
+ * GitHub API Integration Module
+ *
+ * This module handles GitHub repository operations including:
+ * - Fetching commit data from repositories
+ * - Processing and summarizing commits using AI
+ * - Managing commit data persistence in the database
+ */
+
 import { Octokit } from "octokit";
-import { db } from "~/server/db";
 import axios from "axios";
+import { db } from "~/server/db";
 import { aiSummeriseCommit } from "./gemini";
+
+// ==================== CONFIGURATION ====================
 
 export const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
 });
+
+// ==================== TYPES ====================
 
 type Response = {
   commitHash: string;
@@ -15,6 +28,13 @@ type Response = {
   commitDate: string;
 };
 
+// ==================== PUBLIC API FUNCTIONS ====================
+
+/**
+ * Fetches the latest 10 commits from a GitHub repository
+ * @param githubUrl - The GitHub repository URL (e.g., "https://github.com/owner/repo")
+ * @returns Array of commit data sorted by date (newest first)
+ */
 export const getCommitHashes = async (
   githubUrl: string,
 ): Promise<Response[]> => {
@@ -23,17 +43,20 @@ export const getCommitHashes = async (
     throw new Error("Invalid github URL");
   }
 
+  // Fetch commits from GitHub API
   const { data } = await octokit.rest.repos.listCommits({
     owner,
     repo,
   });
 
+  // Sort commits by date (newest first)
   const sortedCommits = data.sort(
     (a: any, b: any) =>
       new Date(b.commit.author?.date).getTime() -
       new Date(a.commit.author?.date).getTime(),
   ) as any[];
 
+  // Return formatted commit data (limit to 10 most recent)
   return sortedCommits.slice(0, 10).map((commit: any) => ({
     commitHash: commit.sha as string,
     commitMessage: commit.commit?.message ?? "",
@@ -43,22 +66,37 @@ export const getCommitHashes = async (
   }));
 };
 
+/**
+ * Main function to poll and process new commits for a project
+ * 1. Fetches latest commits from GitHub
+ * 2. Filters out already processed commits
+ * 3. Generates AI summaries for new commits
+ * 4. Saves everything to the database
+ *
+ * @param projectId - The project ID to process commits for
+ * @returns Database result of saved commits
+ */
 export const pollCommits = async (projectId: string) => {
+  // Get project's GitHub URL
   const { project, githubUrl } = await fetchProjectGithubUrl(projectId);
 
+  // Fetch latest commits from GitHub
   const commitHashes = await getCommitHashes(githubUrl!);
 
+  // Filter out commits we've already processed
   const unprocessedCommits = await filterUnprocessedCommits(
     projectId,
     commitHashes,
   );
 
+  // Generate AI summaries for new commits (with error handling)
   const summaryResponses = await Promise.allSettled(
     unprocessedCommits.map((commit) => {
       return summeriseCommit(githubUrl!, commit.commitHash);
     }),
   );
 
+  // Extract summaries or fallback messages
   const summeries = summaryResponses.map((responses) => {
     if (responses.status === "fulfilled") {
       return responses.value;
@@ -67,6 +105,7 @@ export const pollCommits = async (projectId: string) => {
     }
   });
 
+  // Save all processed commits to database
   const finalDbSavedCommits = await db.commit.createMany({
     data: summeries.map((summary, index) => {
       return {
@@ -84,20 +123,30 @@ export const pollCommits = async (projectId: string) => {
   return finalDbSavedCommits;
 };
 
+// ==================== HELPER FUNCTIONS ====================
+
+/**
+ * Generates an AI summary for a specific commit
+ * Fetches the commit diff and passes it to the AI service
+ */
 async function summeriseCommit(githubUrl: string, commitHash: string) {
-  //get the diff and then pass the diff to gemini
+  // Get the diff data from GitHub
   const { data } = await axios.get(`${githubUrl}/commit/${commitHash}.diff`, {
     headers: {
       Accept: "application/vnd.github.v3.diff",
     },
   });
 
+  // Generate AI summary or return fallback message
   return (
     (await aiSummeriseCommit(data)) ||
     " Something went wrong while summarising the commit"
   );
 }
 
+/**
+ * Retrieves the GitHub URL for a project from the database
+ */
 async function fetchProjectGithubUrl(projectId: string) {
   const project = await db.project.findUnique({
     where: {
@@ -118,16 +167,21 @@ async function fetchProjectGithubUrl(projectId: string) {
   };
 }
 
+/**
+ * Filters out commits that have already been processed and stored in the database
+ */
 async function filterUnprocessedCommits(
   projectId: string,
   commitHashes: Response[],
 ) {
+  // Get all commits already stored for this project
   const processedCommits = await db.commit.findMany({
     where: {
       projectId,
     },
   });
 
+  // Return only commits that haven't been processed yet
   const unprocessedCommits = commitHashes.filter(
     (commit) =>
       !processedCommits.some(
