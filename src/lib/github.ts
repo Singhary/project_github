@@ -1,11 +1,11 @@
 import { Octokit } from "octokit";
 import { db } from "~/server/db";
+import axios from "axios";
+import { aiSummeriseCommit } from "./gemini";
 
 export const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
 });
-
-const githubUrl = "https://github.com/Singhary/chaty";
 
 type Response = {
   commitHash: string;
@@ -53,8 +53,50 @@ export const pollCommits = async (projectId: string) => {
     commitHashes,
   );
 
-  return unprocessedCommits;
+  const summaryResponses = await Promise.allSettled(
+    unprocessedCommits.map((commit) => {
+      return summeriseCommit(githubUrl!, commit.commitHash);
+    }),
+  );
+
+  const summeries = summaryResponses.map((responses) => {
+    if (responses.status === "fulfilled") {
+      return responses.value;
+    } else {
+      return " Something went wrong while summarising the commit";
+    }
+  });
+
+  const finalDbSavedCommits = await db.commit.createMany({
+    data: summeries.map((summary, index) => {
+      return {
+        projectId,
+        commitHash: unprocessedCommits[index]?.commitHash!,
+        commitMessage: unprocessedCommits[index]?.commitMessage!,
+        commitAuthorName: unprocessedCommits[index]?.commitAuthorName!,
+        commitAuthorAvatar: unprocessedCommits[index]?.commitAuthorAvatar!,
+        commitDate: unprocessedCommits[index]?.commitDate!,
+        summary,
+      };
+    }),
+  });
+
+  return finalDbSavedCommits;
 };
+
+async function summeriseCommit(githubUrl: string, commitHash: string) {
+  //get the diff and then pass the diff to gemini
+  const { data } = await axios.get(`${githubUrl}/commit/${commitHash}.diff`, {
+    headers: {
+      Accept: "application/vnd.github.v3.diff",
+    },
+  });
+
+  return (
+    (await aiSummeriseCommit(data)) ||
+    " Something went wrong while summarising the commit"
+  );
+}
 
 async function fetchProjectGithubUrl(projectId: string) {
   const project = await db.project.findUnique({

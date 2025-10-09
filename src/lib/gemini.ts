@@ -7,7 +7,7 @@ const model = genAi.getGenerativeModel({
   model: "gemini-2.0-flash-001",
 });
 
-export const summeriseCommit = async (diff: string): Promise<string> => {
+export const aiSummeriseCommit = async (diff: string): Promise<string> => {
   try {
     const DIFF_SUMMARY_PROMPT = `# Role and Context
   You are an expert programmer tasked with creating concise, informative summaries of git diffs for commit messages and code reviews.
