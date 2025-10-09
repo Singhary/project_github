@@ -18,9 +18,14 @@ type Response = {
 export const getCommitHashes = async (
   githubUrl: string,
 ): Promise<Response[]> => {
+  const [owner, repo] = githubUrl.split("/").slice(-2);
+  if (!owner || !repo) {
+    throw new Error("Invalid github URL");
+  }
+
   const { data } = await octokit.rest.repos.listCommits({
-    owner: "singhary",
-    repo: "chaty",
+    owner,
+    repo,
   });
 
   const sortedCommits = data.sort(
@@ -39,14 +44,16 @@ export const getCommitHashes = async (
 };
 
 export const pollCommits = async (projectId: string) => {
-  const {project , githubUrl} = await fetchProjectGithubUrl(projectId);
+  const { project, githubUrl } = await fetchProjectGithubUrl(projectId);
 
-  const commitHashes = await getCommitHashes(githubUrl!) ;
+  const commitHashes = await getCommitHashes(githubUrl!);
 
-  
+  const unprocessedCommits = await filterUnprocessedCommits(
+    projectId,
+    commitHashes,
+  );
 
-
-
+  return unprocessedCommits;
 };
 
 async function fetchProjectGithubUrl(projectId: string) {
@@ -59,7 +66,7 @@ async function fetchProjectGithubUrl(projectId: string) {
     },
   });
 
-  if(!project?.repoUrl){
+  if (!project?.repoUrl) {
     throw new Error("Project has no repoUrl(githuburl)");
   }
 
@@ -67,4 +74,24 @@ async function fetchProjectGithubUrl(projectId: string) {
     project,
     githubUrl: project?.repoUrl,
   };
+}
+
+async function filterUnprocessedCommits(
+  projectId: string,
+  commitHashes: Response[],
+) {
+  const processedCommits = await db.commit.findMany({
+    where: {
+      projectId,
+    },
+  });
+
+  const unprocessedCommits = commitHashes.filter(
+    (commit) =>
+      !processedCommits.some(
+        (processedCommit) => processedCommit.commitHash === commit.commitHash,
+      ),
+  );
+
+  return unprocessedCommits;
 }
