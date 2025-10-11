@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { env } from "../env.js";
+import { Document } from "@langchain/core/documents";
 
 const genAi = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 const model = genAi.getGenerativeModel({
@@ -85,3 +86,42 @@ export const aiSummeriseCommit = async (diff: string): Promise<string> => {
     throw new Error("Failed to generate commit summary");
   }
 };
+
+export async function summeriseCode(doc: Document) {
+  console.log("Getting summery for", doc.metadata.source);
+  const code = doc.pageContent.slice(0, 100000);
+
+  try {
+    const response = await model.generateContent([
+      `You are a senior software engineer writing technical documentation.
+    
+    Analyze this file: ${doc.metadata.source}
+    
+    \`\`\`
+    ${code}
+    \`\`\`
+    
+    Provide a 120-word technical summary for a new developer that covers:
+    - Primary purpose and responsibility
+    - Key functions/classes/exports and what they do
+    - How it fits into the larger system
+    - Notable dependencies or patterns
+    
+    Focus on what matters for understanding and modifying this code. Use clear, specific language.`,
+    ]);
+
+    return response.response.text();
+  } catch (error) {
+    return ''
+  }
+}
+
+export async function generateEmbedding(summary: string) {
+  const model = genAi.getGenerativeModel({
+    model: "text-embedding-004",
+  });
+
+  const result = await model.embedContent(summary);
+  const embedding = result.embedding;
+  return embedding.values;
+}

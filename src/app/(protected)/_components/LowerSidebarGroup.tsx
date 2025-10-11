@@ -17,9 +17,10 @@ type LowerSidebarGroupProps = {
 };
 
 export default function LowerSidebarGroup({ isOpen }: LowerSidebarGroupProps) {
-  const { projects, projectId, setProjectId } = useProject();
+  const { projects, projectId, setProjectId, isLoading } = useProject();
 
-  if (!projects || projects.length === 0) {
+  // Loading state
+  if (isLoading) {
     return (
       <SidebarGroup>
         <SidebarGroupLabel>Your Projects</SidebarGroupLabel>
@@ -33,6 +34,31 @@ export default function LowerSidebarGroup({ isOpen }: LowerSidebarGroupProps) {
     );
   }
 
+  // No projects state
+  if (!projects || projects.length === 0) {
+    return (
+      <SidebarGroup>
+        <SidebarGroupLabel>Your Projects</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <div className="text-muted-foreground px-2 py-4 text-sm">
+            <span>No projects yet</span>
+          </div>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <Link href={"/create"}>
+                <Button variant={"outline"} className="w-fit" size={"sm"}>
+                  <Plus />
+                  Create Project
+                </Button>
+              </Link>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    );
+  }
+
+  // Has projects state
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Your Projects</SidebarGroupLabel>

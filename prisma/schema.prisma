@@ -62,7 +62,7 @@ model UserToProject {
 model SourceCodeEmbedding {
     id String @id @default(uuid())
 
-    summaryEmbedding Unsupported("vector(1536)")?
+    summaryEmbedding Unsupported("vector(768)")?
     souceCode        String
     fileName         String
     summary          String
