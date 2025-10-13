@@ -99,7 +99,9 @@ export const pollCommits = async (projectId: string) => {
   // Generate AI summaries for new commits (with error handling)
   const summaryResponses = await Promise.allSettled(
     unprocessedCommits.map((commit, index) => {
-      console.log(`Processing commit ${index + 1}/${unprocessedCommits.length}: ${commit.commitHash.slice(0, 8)}`);
+      console.log(
+        `Processing commit ${index + 1}/${unprocessedCommits.length}: ${commit.commitHash.slice(0, 8)}`,
+      );
       return summeriseCommit(githubUrl!, commit.commitHash);
     }),
   );
@@ -109,7 +111,10 @@ export const pollCommits = async (projectId: string) => {
     if (response.status === "fulfilled") {
       return response.value;
     } else {
-      console.error(`Failed to summarize commit ${unprocessedCommits[index]?.commitHash}:`, response.reason);
+      console.error(
+        `Failed to summarize commit ${unprocessedCommits[index]?.commitHash}:`,
+        response.reason,
+      );
       // Return the specific error message from the AI function instead of generic message
       return response.reason?.message || "Failed to generate commit summary";
     }

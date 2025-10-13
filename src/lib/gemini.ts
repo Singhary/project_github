@@ -11,7 +11,7 @@ const model = genAi.getGenerativeModel({
 export const aiSummeriseCommit = async (diff: string): Promise<string> => {
   try {
     // Validate inputs
-    if (!diff || typeof diff !== 'string') {
+    if (!diff || typeof diff !== "string") {
       console.warn("Invalid diff provided to aiSummeriseCommit");
       return "No changes to summarize";
     }
@@ -82,7 +82,7 @@ export const aiSummeriseCommit = async (diff: string): Promise<string> => {
   `;
 
     console.log("Generating commit summary with Gemini AI...");
-    
+
     const response = await model.generateContent([
       `${DIFF_SUMMARY_PROMPT}
   
@@ -93,12 +93,12 @@ export const aiSummeriseCommit = async (diff: string): Promise<string> => {
     ]);
 
     const summary = response.response.text();
-    
+
     if (!summary || summary.trim() === "") {
       console.warn("Gemini API returned empty summary");
       return "Unable to generate summary - empty response from AI";
     }
-    
+
     console.log("Successfully generated commit summary");
     return summary;
   } catch (error: any) {
@@ -106,23 +106,32 @@ export const aiSummeriseCommit = async (diff: string): Promise<string> => {
       message: error.message,
       status: error.status,
       code: error.code,
-      details: error.details || error.response?.data
+      details: error.details || error.response?.data,
     });
-    
+
     // Provide more specific error messages based on error type
-    if (error.message?.includes('API_KEY')) {
+    if (error.message?.includes("API_KEY")) {
       return "Error: Invalid or missing Gemini API key";
-    } else if (error.message?.includes('QUOTA_EXCEEDED') || error.status === 429) {
+    } else if (
+      error.message?.includes("QUOTA_EXCEEDED") ||
+      error.status === 429
+    ) {
       return "Error: Gemini API quota exceeded - please try again later";
-    } else if (error.message?.includes('PERMISSION_DENIED') || error.status === 403) {
+    } else if (
+      error.message?.includes("PERMISSION_DENIED") ||
+      error.status === 403
+    ) {
       return "Error: Gemini API access denied - check API key permissions";
     } else if (error.status >= 500) {
       return "Error: Gemini API server error - please try again later";
-    } else if (error.message?.includes('network') || error.code === 'ECONNREFUSED') {
+    } else if (
+      error.message?.includes("network") ||
+      error.code === "ECONNREFUSED"
+    ) {
       return "Error: Network connection failed - check your internet connection";
     }
-    
-    return `Error generating summary: ${error.message || 'Unknown error'}`;
+
+    return `Error generating summary: ${error.message || "Unknown error"}`;
   }
 };
 
@@ -151,7 +160,7 @@ export async function summeriseCode(doc: Document) {
 
     return response.response.text();
   } catch (error) {
-    return ''
+    return "";
   }
 }
 
