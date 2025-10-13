@@ -89,19 +89,29 @@ export const pollCommits = async (projectId: string) => {
     commitHashes,
   );
 
+  if (unprocessedCommits.length === 0) {
+    console.log("No new commits to process");
+    return { count: 0 };
+  }
+
+  console.log(`Processing ${unprocessedCommits.length} new commits...`);
+
   // Generate AI summaries for new commits (with error handling)
   const summaryResponses = await Promise.allSettled(
-    unprocessedCommits.map((commit) => {
+    unprocessedCommits.map((commit, index) => {
+      console.log(`Processing commit ${index + 1}/${unprocessedCommits.length}: ${commit.commitHash.slice(0, 8)}`);
       return summeriseCommit(githubUrl!, commit.commitHash);
     }),
   );
 
-  // Extract summaries or fallback messages
-  const summeries = summaryResponses.map((responses) => {
-    if (responses.status === "fulfilled") {
-      return responses.value;
+  // Extract summaries with better error handling
+  const summeries = summaryResponses.map((response, index) => {
+    if (response.status === "fulfilled") {
+      return response.value;
     } else {
-      return " Something went wrong while summarising the commit";
+      console.error(`Failed to summarize commit ${unprocessedCommits[index]?.commitHash}:`, response.reason);
+      // Return the specific error message from the AI function instead of generic message
+      return response.reason?.message || "Failed to generate commit summary";
     }
   });
 
@@ -120,6 +130,7 @@ export const pollCommits = async (projectId: string) => {
     }),
   });
 
+  console.log(`Successfully processed ${unprocessedCommits.length} commits`);
   return finalDbSavedCommits;
 };
 

@@ -5,11 +5,22 @@ import { Document } from "@langchain/core/documents";
 
 const genAi = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 const model = genAi.getGenerativeModel({
-  model: "gemini-2.0-flash-001",
+  model: "gemini-2.0-flash-lite",
 });
 
 export const aiSummeriseCommit = async (diff: string): Promise<string> => {
   try {
+    // Validate inputs
+    if (!diff || typeof diff !== 'string') {
+      console.warn("Invalid diff provided to aiSummeriseCommit");
+      return "No changes to summarize";
+    }
+
+    if (diff.length > 200000) {
+      console.warn("Diff too large, truncating...");
+      diff = diff.slice(0, 200000) + "\n\n[... diff truncated due to size ...]";
+    }
+
     const DIFF_SUMMARY_PROMPT = `# Role and Context
   You are an expert programmer tasked with creating concise, informative summaries of git diffs for commit messages and code reviews.
   
@@ -70,6 +81,8 @@ export const aiSummeriseCommit = async (diff: string): Promise<string> => {
   Please summarize the following git diff:
   `;
 
+    console.log("Generating commit summary with Gemini AI...");
+    
     const response = await model.generateContent([
       `${DIFF_SUMMARY_PROMPT}
   
@@ -80,10 +93,36 @@ export const aiSummeriseCommit = async (diff: string): Promise<string> => {
     ]);
 
     const summary = response.response.text();
+    
+    if (!summary || summary.trim() === "") {
+      console.warn("Gemini API returned empty summary");
+      return "Unable to generate summary - empty response from AI";
+    }
+    
+    console.log("Successfully generated commit summary");
     return summary;
-  } catch (error) {
-    console.error("Error generating commit summary:", error);
-    throw new Error("Failed to generate commit summary");
+  } catch (error: any) {
+    console.error("Error generating commit summary:", {
+      message: error.message,
+      status: error.status,
+      code: error.code,
+      details: error.details || error.response?.data
+    });
+    
+    // Provide more specific error messages based on error type
+    if (error.message?.includes('API_KEY')) {
+      return "Error: Invalid or missing Gemini API key";
+    } else if (error.message?.includes('QUOTA_EXCEEDED') || error.status === 429) {
+      return "Error: Gemini API quota exceeded - please try again later";
+    } else if (error.message?.includes('PERMISSION_DENIED') || error.status === 403) {
+      return "Error: Gemini API access denied - check API key permissions";
+    } else if (error.status >= 500) {
+      return "Error: Gemini API server error - please try again later";
+    } else if (error.message?.includes('network') || error.code === 'ECONNREFUSED') {
+      return "Error: Network connection failed - check your internet connection";
+    }
+    
+    return `Error generating summary: ${error.message || 'Unknown error'}`;
   }
 };
 
