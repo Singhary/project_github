@@ -91,4 +91,13 @@ export const projectRouter = createTRPCRouter({
         },
       });
     }),
+
+    uploadMeeting: protectedProcedure.input(z.object({
+       projectId: z.string(),
+       meetingUrl: z.string().url(),
+       name: z.string().min(1).max(100),
+    })).mutation(async ({ input , ctx}) => {
+       const meeting = await ctx.db
+    })
+
 });
