@@ -4,6 +4,7 @@ import Link from "next/link";
 import useProject from "~/hooks/use-project";
 import CommitLog from "./commit-log";
 import AskQuestionCard from "./askQuestionCard";
+import MeetingCard from "./meetingCard";
 
 const DashboardPage = () => {
   const { project } = useProject();
@@ -44,7 +45,7 @@ const DashboardPage = () => {
       <div className="mt-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
           <AskQuestionCard/>
-          MeetingCard
+           <MeetingCard/>
         </div>
       </div>
 
