@@ -36,7 +36,7 @@ const MeetingCard = () => {
           {
             projectId: project?.id!,
             meetingUrl: downloadURL as string,
-            name: project?.projectName!,
+            name: file.name,
           },
           {
             onSuccess: () => {
