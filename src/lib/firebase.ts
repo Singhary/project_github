@@ -29,7 +29,6 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
 export const storage = getStorage(app);
 
@@ -41,7 +40,8 @@ export async function uploadFile(
 
   return new Promise((resolve, reject) => {
     try {
-      const storageRef = ref(storage, file.name);
+      const uniqueFileName = `${Date.now()}.${file.name}`;
+      const storageRef = ref(storage, uniqueFileName);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
       uploadTask.on(

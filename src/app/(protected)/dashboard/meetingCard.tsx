@@ -6,10 +6,18 @@ import { uploadFile } from "~/lib/firebase";
 import { Presentation, Upload } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { buildStyles, CircularProgressbar } from "react-circular-progressbar";
+import { api } from "~/trpc/react";
+import useProject from "~/hooks/use-project";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const MeetingCard = () => {
+  const { project } = useProject();
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const uploadMeeting = api.project.uploadMeeting.useMutation();
+  const router = useRouter();
+
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
       "audio/*": [".mp3", ".wav", ".m4a"],
@@ -19,7 +27,28 @@ const MeetingCard = () => {
     onDrop: async (acceptedFiles) => {
       setIsUploading(true);
       const file = acceptedFiles[0];
+
+      if (!file) return;
+
       const downloadURL = await uploadFile(file! as File, setProgress);
+      if (downloadURL) {
+        uploadMeeting.mutate(
+          {
+            projectId: project?.id!,
+            meetingUrl: downloadURL as string,
+            name: project?.projectName!,
+          },
+          {
+            onSuccess: () => {
+              toast.success("Meeting uploaded successfully");
+              router.push("/meetings");
+            },
+            onError: () => {
+              toast.error("There was an error uploading your meeting");
+            },
+          },
+        );
+      }
       setIsUploading(false);
     },
   });

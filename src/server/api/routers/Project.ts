@@ -92,12 +92,31 @@ export const projectRouter = createTRPCRouter({
       });
     }),
 
-    uploadMeeting: protectedProcedure.input(z.object({
-       projectId: z.string(),
-       meetingUrl: z.string().url(),
-       name: z.string().min(1).max(100),
-    })).mutation(async ({ input , ctx}) => {
-       const meeting = await ctx.db
-    })
-
+  uploadMeeting: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        meetingUrl: z.string().url(),
+        name: z.string().min(1).max(100),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const meeting = await ctx.db.meeting.create({
+        data: {
+          projectId: input.projectId,
+          meetingUrl: input.meetingUrl,
+          name: input.name,
+          status: "PROCESSING",
+        },
+      });
+    }),
+  getMeetings: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      return await ctx.db.meeting.findMany({
+        where: {
+          projectId: input.projectId,
+        },
+      });
+    }),
 });
