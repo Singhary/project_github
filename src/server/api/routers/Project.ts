@@ -109,6 +109,7 @@ export const projectRouter = createTRPCRouter({
           status: "PROCESSING",
         },
       });
+      return meeting;
     }),
   getMeetings: protectedProcedure
     .input(z.object({ projectId: z.string() }))
@@ -119,7 +120,16 @@ export const projectRouter = createTRPCRouter({
         },
         include: {
           issues: true,
-        }
+        },
+      });
+    }),
+  deleteMeeting: protectedProcedure
+    .input(z.object({ meetingId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      await ctx.db.meeting.delete({
+        where: {
+          id: input.meetingId,
+        },
       });
     }),
 });
