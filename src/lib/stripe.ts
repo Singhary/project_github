@@ -23,13 +23,14 @@ export async function createCheckoutSession(credits: number) {
           product_data: {
             name: `${credits} Codexa Credits`,
           },
-          unit_amount: Math.round((credits / 100)*10000 * 13), // Price in INR cents
+          unit_amount: Math.round((credits / 100) * 10000 * 13), // Price in INR cents
         },
         quantity: 1,
       },
     ],
     customer_creation: "always",
     mode: "payment",
+    billing_address_collection: "required",
     success_url: `${env.NEXT_PUBLIC_APP_URL}/create`,
     cancel_url: `${env.NEXT_PUBLIC_APP_URL}/billing`,
     client_reference_id: userId.toString(),
