@@ -1,4 +1,5 @@
 import { createEnv } from "@t3-oss/env-nextjs";
+import { ST } from "next/dist/shared/lib/utils";
 import { z } from "zod";
 
 export const env = createEnv({
@@ -13,6 +14,8 @@ export const env = createEnv({
       .default("development"),
     GEMINI_API_KEY: z.string(),
     ASSEMBLYAI_API_KEY: z.string(),
+    STRIPE_SECRET_KEY: z.string(),
+    STRIPE_PUBLISHABLE_KEY: z.string(),
   },
 
   /**
@@ -35,6 +38,8 @@ export const env = createEnv({
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
     ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    STRIPE_PUBLISHABLE_KEY: process.env.STRIPE_PUBLISHABLE_KEY,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

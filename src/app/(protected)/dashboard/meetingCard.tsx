@@ -90,7 +90,7 @@ const MeetingCard = () => {
           </h3>
 
           <p className="mt-1 text-center text-sm text-gray-500">
-            Analyse your meeting using Dionysus.
+            Analyse your meeting using Codexa.
             <br />
             Powered by AI.
           </p>

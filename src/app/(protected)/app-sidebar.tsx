@@ -19,7 +19,7 @@ export function AppSidebar() {
       <SidebarHeader>
         <div className="flex items-center space-x-2">
           <Image src="/logo.png" alt="logo" width={40} height={40} />
-          {open && <span className="text-lg font-bold">MyApp</span>}
+          {open && <span className="text-lg font-bold">Codexa</span>}
         </div>
       </SidebarHeader>
 
