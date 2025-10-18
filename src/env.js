@@ -26,6 +26,7 @@ export const env = createEnv({
   client: {
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
     NEXT_PUBLIC_FIREBASE_API_KEY: z.string(),
+    NEXT_PUBLIC_APP_URL: z.string().url(),
   },
 
   /**
@@ -40,6 +41,7 @@ export const env = createEnv({
     ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_PUBLISHABLE_KEY: process.env.STRIPE_PUBLISHABLE_KEY,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
