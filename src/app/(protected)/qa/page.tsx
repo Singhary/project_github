@@ -68,7 +68,7 @@ const QAPage = () => {
         <SheetContent className="sm:max-w-[80vw]">
           <SheetHeader>
             <SheetTitle>{question.question}</SheetTitle>
-            <div data-Color-Mode="light" >
+            <div data-Color-Mode="light">
               <MDEditor.Markdown source={question.answer || "No answer yet"} />
             </div>
             <CodeReferences

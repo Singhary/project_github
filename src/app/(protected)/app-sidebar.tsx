@@ -18,7 +18,13 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
         <div className="flex items-center space-x-2">
-          <Image src="/logo.png" alt="logo" width={40} height={40} className="rounded-lg bg-gray-50" />
+          <Image
+            src="/logo.png"
+            alt="logo"
+            width={40}
+            height={40}
+            className="rounded-lg bg-gray-50"
+          />
           {open && <span className="text-lg font-bold">Codexa</span>}
         </div>
       </SidebarHeader>

@@ -37,14 +37,14 @@ export async function POST(req: NextRequest) {
     });
 
     await db.meeting.update({
-        where: { 
-            id: meetingId,
-        },
-        data: {
-            status: 'COMPLETED',
-            name: summaries[0]?.headline
-        }
-    })
+      where: {
+        id: meetingId,
+      },
+      data: {
+        status: "COMPLETED",
+        name: summaries[0]?.headline,
+      },
+    });
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
