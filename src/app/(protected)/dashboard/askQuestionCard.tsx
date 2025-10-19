@@ -67,7 +67,7 @@ const AskQuestionCard = () => {
           <DialogHeader className="flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <DialogTitle>
-                <Image src={"/logo.png"} alt="logo" width={40} height={40} />
+                <Image src={"/logo.png"} alt="logo" width={40} height={40} className="rounded-lg bg-gray-50"  />
               </DialogTitle>
               <Button
                disabled={!streamingComplete || saveAnswer.isPending}
