@@ -8,7 +8,7 @@ import MeetingCard from "./meetingCard";
 import ArchiveButton from "./archiveButton";
 import TeamMember from "./TeamMember";
 import dynamic from "next/dynamic";
-const InviteButton = dynamic(() => import('./inviteButton'), { ssr: false });
+const InviteButton = dynamic(() => import("./inviteButton"), { ssr: false });
 
 const DashboardPage = () => {
   const { project, projectId } = useProject();
