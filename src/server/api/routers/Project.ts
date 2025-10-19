@@ -1,7 +1,7 @@
 import z from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { pollCommits } from "~/lib/github";
-import { indexGithubRepo } from "~/lib/github-loader";
+import { checkCredits, indexGithubRepo } from "~/lib/github-loader";
 
 export const projectRouter = createTRPCRouter({
   createProject: protectedProcedure
@@ -13,6 +13,22 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      const user = await ctx.db.user.findUnique({
+        where: { id: ctx.user.userId! },
+        select: { credits: true },
+      });
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      const currentCredits = user.credits;
+      const fileCount = await checkCredits(input.repoUrl, input.githubToken);
+
+      if (currentCredits < fileCount) {
+        throw new Error("Not enough credits to create project");
+      }
+
       const project = await ctx.db.project.create({
         data: {
           projectName: input.projectName,
@@ -28,6 +44,12 @@ export const projectRouter = createTRPCRouter({
 
       await indexGithubRepo(project.id, input.repoUrl, input.githubToken);
       await pollCommits(project.id);
+
+      await ctx.db.user.update({
+        where: { id: ctx.user.userId! },
+        data: { credits: currentCredits - fileCount },
+      });
+      
       return project;
     }),
   getProjects: protectedProcedure.query(async ({ ctx }) => {
@@ -188,7 +210,25 @@ export const projectRouter = createTRPCRouter({
       },
       select: {
         credits: true,
-      }
-    })
-  })
+      },
+    });
+  }),
+
+  checkCredits: protectedProcedure
+    .input(
+      z.object({ githubUrl: z.string(), githubToken: z.string().optional() }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const fileCount = await checkCredits(input.githubUrl, input.githubToken);
+      const userCredits = await ctx.db.user.findUnique({
+        where: {
+          id: ctx.user.userId!,
+        },
+        select: {
+          credits: true,
+        },
+      });
+
+      return { fileCount, userHavingCredits: userCredits?.credits || 0 };
+    }),
 });
