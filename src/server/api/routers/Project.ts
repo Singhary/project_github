@@ -61,6 +61,7 @@ export const projectRouter = createTRPCRouter({
           },
         },
         deletedAt: null,
+        archiveStatus: "UNARCHIVED",
       },
     });
   }),
@@ -186,7 +187,7 @@ export const projectRouter = createTRPCRouter({
           id: input.projectId,
         },
         data: {
-          deletedAt: new Date(),
+          archiveStatus: "ARCHIVED",
         },
       });
     }),
