@@ -25,7 +25,7 @@ export function AppSidebar() {
             height={40}
             className="rounded-lg bg-gray-50"
           />
-          {open && <span className="text-lg font-bold">Codexa</span>}
+          {open && <span className="text-lg font-bold size-7 ml-0.5">Codexa</span>}
         </div>
       </SidebarHeader>
 
