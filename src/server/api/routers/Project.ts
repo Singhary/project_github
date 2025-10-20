@@ -49,7 +49,7 @@ export const projectRouter = createTRPCRouter({
         where: { id: ctx.user.userId! },
         data: { credits: currentCredits - fileCount },
       });
-      
+
       return project;
     }),
   getProjects: protectedProcedure.query(async ({ ctx }) => {
@@ -232,4 +232,59 @@ export const projectRouter = createTRPCRouter({
 
       return { fileCount, userHavingCredits: userCredits?.credits || 0 };
     }),
+
+  getAllArchivedProjects: protectedProcedure.query(async ({ ctx }) => {
+    const allUserProjects = await ctx.db.project.findMany({
+      where: {
+        userToProjects: {
+          some: {
+            userId: ctx.user.userId!,
+          },
+        },
+      },
+    });
+
+    return allUserProjects.filter((project)=> project.archiveStatus === "ARCHIVED");
+  }),
+
+  unArchiveTheProject: protectedProcedure
+  .input(z.array(z.string()))
+  .mutation(async ({ input , ctx})=> {
+    return await ctx.db.project.updateMany({
+      where: {
+        id: {
+          in: input,
+        },
+        userToProjects: {
+          some: {
+            userId: ctx.user.userId!,
+          },
+        },
+      },
+      data: {
+        archiveStatus: "UNARCHIVED",
+      },
+    });
+  }),
+
+  deleteProjects: protectedProcedure
+  .input(z.array(z.string()))
+  .mutation(async ({ input, ctx }) => {
+    return await ctx.db.project.updateMany({
+      where: {
+        id: {
+          in: input,
+        },
+        userToProjects: {
+          some: {
+            userId: ctx.user.userId!,
+          },
+        },
+      },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+  }),
+
 });

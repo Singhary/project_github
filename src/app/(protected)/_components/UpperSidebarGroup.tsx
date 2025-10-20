@@ -1,4 +1,10 @@
-import { Bot, CreditCard, LayoutDashboard, Presentation } from "lucide-react";
+import {
+  Archive,
+  Bot,
+  CreditCard,
+  LayoutDashboard,
+  Presentation,
+} from "lucide-react";
 import Link from "next/link";
 import {
   SidebarGroup,
@@ -30,6 +36,11 @@ const items = [
     title: "Billing",
     url: "/billing",
     icon: CreditCard,
+  },
+  {
+    title: "Archive Projects",
+    url: "/archive",
+    icon: Archive,
   },
 ];
 
